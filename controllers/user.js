@@ -43,7 +43,6 @@ exports.getAllDetails = (req, res) => {
 
 /**
  * Create new user
- * TODO: AUTHENTICATION STUFF
  */
 exports.createNewUser = (req, res) => {
   const { body, error } = validations.validateBasicDetails(req.body);
@@ -55,9 +54,12 @@ exports.createNewUser = (req, res) => {
       .then(user => res.send(user._id))
       .catch(err => {
         console.log(err);
-        res
-          .status(500)
-          .send({ error: "Something went wrong. Try again Later!" });
+        if (err.code === 11000)
+          res.status(400).send({ error: "Email already exist" });
+        else
+          res
+            .status(500)
+            .send({ error: "Something went wrong. Try again Later!" });
       });
 };
 
