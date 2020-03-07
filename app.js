@@ -5,7 +5,12 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const { User, Education } = require("./models");
-const { userRoutes, educationRoutes } = require("./routes");
+const {
+  userRoutes,
+  educationRoutes,
+  workRoutes,
+  achivementRoutes
+} = require("./routes");
 
 const dev = require("./dev/populateDB");
 
@@ -18,6 +23,8 @@ app.use(bodyParser.json());
 // Mounting Routes
 app.use("/api/user", userRoutes);
 app.use("/api/education", educationRoutes);
+app.use("/api/work", workRoutes);
+app.use("/api/achivement", achivementRoutes);
 
 app.get("/", (req, res) => {
   User.find({})

@@ -15,7 +15,7 @@ const workSchema = Schema({
     type: String,
     required: true
   },
-  positon: {
+  position: {
     type: String,
     required: true
   }

@@ -55,7 +55,7 @@ exports.validateUpdatedDetails = ({ name, gender, dob, social }) => {
   const body = {};
   if (name) body.name = name;
   if (gender) body.gender = gender;
-  if (dob) body.dob = Date(dob);
+  if (dob) body.dob = Date(dob.trim());
   body.social = social;
 
   return {
@@ -124,11 +124,116 @@ exports.validateUpdatedEducation = ({
   if (errorMessage) return { body: null, error: { error: errorMessage } };
 
   const body = {};
-  if (from) body.from = from;
-  if (to) body.to = to;
+  if (from) body.from = Date(from.trim());
+  if (to) body.to = Date(to.trim());
   if (institute) body.institute = institute;
   if (degree) body.degree = degree;
   body.specialization = specialization;
+
+  return {
+    body,
+    error: null
+  };
+};
+
+/**
+ * Validates Work details
+ * @param {Object} - request body
+ * @returns {Object} - containing request body and error object
+ */
+exports.validateWork = ({ from, to, organization, position }) => {
+  let errorMessage = "";
+
+  if (!from || !from.trim()) errorMessage = "Missing starting date";
+  else if (!to || !to.trim()) errorMessage = "Missing ending date";
+  else if (from && to && Date().valueOf(to) < Date().valueOf(from))
+    errorMessage = "Invalid date range";
+  else if (!organization || !organization.trim())
+    errorMessage = "Missing organization name";
+  else if (!position || !position.trim()) errorMessage = "Missing Position";
+
+  if (errorMessage) return { body: null, error: { error: errorMessage } };
+  return {
+    body: {
+      from: Date(from.trim()),
+      to: Date(to.trim()),
+      organization: organization.trim(),
+      position: position.trim()
+    },
+    error: null
+  };
+};
+
+/**
+ * Validates Updated Education details
+ * @param {Object} - request body
+ * @returns {Object} - containing request body and error object
+ */
+exports.validateUpdatedWork = ({ from, to, organization, position }) => {
+  let errorMessage = "";
+
+  if (from && !from.trim()) errorMessage = "Invalid starting date";
+  else if (to && !from.trim()) errorMessage = "Invalid ending date";
+  else if (Date().valueOf(to) < Date().valueOf(from))
+    errorMessage = "Invalid date range";
+  else if (organization && !organization.trim())
+    errorMessage = "Invalid organization name";
+  else if (position && !position.trim()) errorMessage = "Invalid Position";
+
+  if (errorMessage) return { body: null, error: { error: errorMessage } };
+
+  const body = {};
+  if (from) body.from = Date(from.trim());
+  if (to) body.to = Date(to.trim());
+  if (organization) body.organization = organization;
+  if (position) body.position = position;
+
+  return {
+    body,
+    error: null
+  };
+};
+
+/**
+ * Validates achivement details
+ * @param {Object} - request body
+ * @returns {Object} - containing request body and error object
+ */
+exports.validateAchivement = ({ date, title, description }) => {
+  let errorMessage = "";
+
+  if (!date || !date.trim()) errorMessage = "Missing date";
+  else if (!title || !title.trim()) errorMessage = "Missing title";
+
+  if (errorMessage) return { body: null, error: { error: errorMessage } };
+
+  return {
+    body: {
+      date: Date(date.trim()),
+      title: title.trim(),
+      description: description && description.trim()
+    },
+    error: null
+  };
+};
+
+/**
+ * Validates Updated achivement details
+ * @param {Object} - request body
+ * @returns {Object} - containing request body and error object
+ */
+exports.validateUpdatedAchivement = ({ date, title, description }) => {
+  let errorMessage = "";
+
+  if (date && !date.trim()) errorMessage = "Invalid date";
+  else if (title && !title.trim()) errorMessage = "Invalid title";
+
+  if (errorMessage) return { body: null, error: { error: errorMessage } };
+
+  const body = {};
+  if (date) body.date = Date(date.trim());
+  if (title) body.title = title;
+  body.description = description;
 
   return {
     body,
