@@ -5,7 +5,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 
 const { User, Education } = require("./models");
-const { userRoutes } = require("./routes");
+const { userRoutes, educationRoutes } = require("./routes");
 
 const dev = require("./dev/populateDB");
 
@@ -17,6 +17,7 @@ app.use(bodyParser.json());
 
 // Mounting Routes
 app.use("/api/user", userRoutes);
+app.use("/api/education", educationRoutes);
 
 app.get("/", (req, res) => {
   User.find({})
