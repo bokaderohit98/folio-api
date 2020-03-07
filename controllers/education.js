@@ -6,8 +6,7 @@ const validations = require("../helpers/validations");
  */
 exports.addEducation = (req, res) => {
   const { body, error } = validations.validateEducation(req.body);
-  // TODO: replace with actual user id
-  const user_id = "5e638b86b70f8e0660cbf59e";
+  const userId = req.user._id;
 
   if (!body) res.status(400).send(error);
 
@@ -15,7 +14,7 @@ exports.addEducation = (req, res) => {
     .save()
     .then(edu => {
       return User.findByIdAndUpdate(
-        user_id,
+        userId,
         {
           $push: { educations: edu._id }
         },
@@ -36,7 +35,6 @@ exports.addEducation = (req, res) => {
  */
 exports.editEducation = (req, res) => {
   const { id } = req.params;
-  const user_id = "5e638b86b70f8e0660cbf59e";
 
   const { body, error } = validations.validateUpdatedEducation(req.body);
 
@@ -59,12 +57,12 @@ exports.editEducation = (req, res) => {
  */
 exports.deleteEducation = (req, res) => {
   const { id } = req.params;
-  const user_id = "5e638b86b70f8e0660cbf59e";
+  const userId = req.user._id;
 
   Education.findByIdAndDelete(id)
     .then(() => {
       return User.findByIdAndUpdate(
-        user_id,
+        userId,
         { $pull: { educations: id } },
         { new: true, useFindAndModify: false }
       );

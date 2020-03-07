@@ -6,8 +6,7 @@ const validations = require("../helpers/validations");
  */
 exports.addWork = (req, res) => {
   const { body, error } = validations.validateWork(req.body);
-  // TODO: replace with actual user id
-  const user_id = "5e638b86b70f8e0660cbf59e";
+  const userId = req.user._id;
 
   if (!body) res.status(400).send(error);
 
@@ -15,7 +14,7 @@ exports.addWork = (req, res) => {
     .save()
     .then(work => {
       return User.findByIdAndUpdate(
-        user_id,
+        userId,
         {
           $push: { works: work._id }
         },
@@ -36,7 +35,6 @@ exports.addWork = (req, res) => {
  */
 exports.editWork = (req, res) => {
   const { id } = req.params;
-  const user_id = "5e638b86b70f8e0660cbf59e";
 
   const { body, error } = validations.validateUpdatedWork(req.body);
 
@@ -59,12 +57,12 @@ exports.editWork = (req, res) => {
  */
 exports.deleteWork = (req, res) => {
   const { id } = req.params;
-  const user_id = "5e638b86b70f8e0660cbf59e";
+  const userId = req.user._id;
 
   Work.findByIdAndDelete(id)
     .then(() => {
       return User.findByIdAndUpdate(
-        user_id,
+        userId,
         { $pull: { works: id } },
         { new: true, useFindAndModify: false }
       );

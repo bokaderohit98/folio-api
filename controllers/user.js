@@ -60,17 +60,33 @@ exports.createNewUser = (req, res) => {
 };
 
 /**
+ * Login
+ */
+exports.loginUser = async (req, res) => {
+  const { body, error } = validations.validateLoginDetails(req.body);
+
+  if (!body) res.status(400).send(error);
+
+  try {
+    const user = await User.findByCredentials(body.email, body.password);
+    const token = await user.generateAuthToken();
+    res.send({ user, token });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Invalid Credentials" });
+  }
+};
+
+/**
  * Updating Basic Details
  */
-exports.updateBasicDetails = (req, res) => {
-  const { body, error } = validations.validateUpdatedDetails(req.body);
-  // TODO: replace with actual id
-  const id = "5e638b86b70f8e0660cbf59e";
-  console.log(body);
+exports.updateBasicDetails = async (req, res) => {
+  const { body, error } = await validations.validateUpdatedDetails(req.body);
+  const userId = req.user._id;
 
   if (!body) res.status(400).send(error);
   else
-    User.findByIdAndUpdate(id, body, { useFindAndModify: false, new: true })
+    User.findByIdAndUpdate(userId, body, { useFindAndModify: false, new: true })
       .then(user => {
         res.send(user);
       })
@@ -80,4 +96,36 @@ exports.updateBasicDetails = (req, res) => {
           .status(500)
           .send({ error: "Something went wrong. Try again Later!" });
       });
+};
+
+/**
+ * Logout from device
+ */
+exports.logoutUser = (req, res) => {
+  req.user.tokens = req.user.tokens.filter(item => item.token !== req.token);
+  req.user
+    .save()
+    .then(() => {
+      res.send("Logged out successfully");
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ error: "Something went wrong. Try again Later!" });
+    });
+};
+
+/**
+ * Logout from all device
+ */
+exports.logoutFromAllDevices = (req, res) => {
+  req.user.tokens = [];
+  req.user
+    .save()
+    .then(() => {
+      res.send("Logged out of all devices");
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ error: "Something went wrong. Try again Later!" });
+    });
 };

@@ -1,3 +1,29 @@
+const bcrypt = require("bcryptjs");
+/**
+ * Validate Login details
+ * @param {object} -request body
+ * @returns {Object} - containing request body and error object
+ */
+exports.validateLoginDetails = ({ email, password }) => {
+  const emailRegExp = RegExp(
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
+  let errorMessage = "";
+
+  if (!email || !email.trim() || !emailRegExp.test(email.trim()))
+    errorMessage = "Invalid email";
+  else if (!password || !password.trim()) errorMessage = "Invalid password";
+
+  if (errorMessage) return { body: null, error: { error: errorMessage } };
+  return {
+    body: {
+      email: email.trim(),
+      password: password.trim()
+    },
+    error: null
+  };
+};
+
 /**
  * Validates the basic details
  * @param {Object} - request body
@@ -43,12 +69,19 @@ exports.validateBasicDetails = ({
  * @param {Object} - request body
  * @returns {Object} - containing request body and error object
  */
-exports.validateUpdatedDetails = ({ name, gender, dob, social }) => {
+exports.validateUpdatedDetails = async ({
+  name,
+  gender,
+  dob,
+  social,
+  password
+}) => {
   let errorMessage = "";
 
   if (name && !name.trim()) errorMessage = "Invalid name";
   else if (gender && !gender.trim()) errorMessage = "Invalid gender";
   else if (dob && !dob.trim()) errorMessage = "Invalid Date of Birth";
+  else if (password && !password.trim()) errorMessage = "Invalid password";
 
   if (errorMessage) return { body: null, error: { error: errorMessage } };
 
@@ -56,6 +89,7 @@ exports.validateUpdatedDetails = ({ name, gender, dob, social }) => {
   if (name) body.name = name;
   if (gender) body.gender = gender;
   if (dob) body.dob = Date(dob.trim());
+  if (password) body.password = await bcrypt.hash(password, 10);
   body.social = social;
 
   return {
