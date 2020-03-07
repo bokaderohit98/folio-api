@@ -1,14 +1,10 @@
-const express = require('express');
-require('dotenv').config();
+require("dotenv").config();
+const express = require("express");
 
 const app = express();
 
-app.get('/', (req, res) => {
-    res.send('Hello world');
-})
-
-const PORT = process.env.PORT;
-app.listen(PORT, (err) => {
-    if (err) console.log(err);
-    else console.log(`Server running on PORT ${PORT}`);
+const { PORT } = process.env;
+app.listen(PORT, err => {
+  if (err) console.log(err);
+  else console.log(`Server running on PORT ${PORT}`);
 });
