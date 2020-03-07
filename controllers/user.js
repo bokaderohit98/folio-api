@@ -8,6 +8,7 @@ exports.getBasicDetails = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
+    .select("-password -tokens")
     .then(user => {
       if (user.name === "CastError") throw new Error();
       res.send(user);
@@ -25,6 +26,7 @@ exports.getAllDetails = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
+    .select("-password -tokens")
     .populate("educations")
     .populate("works")
     .populate("achivements")

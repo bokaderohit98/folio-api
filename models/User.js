@@ -11,7 +11,8 @@ const userSchema = Schema({
   },
   email: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   password: {
     type: String,
@@ -32,14 +33,16 @@ const userSchema = Schema({
   educations: [{ type: Schema.Types.ObjectId, ref: "Education" }],
   works: [{ type: Schema.Types.ObjectId, ref: "Work" }],
   achivements: [{ type: Schema.Types.ObjectId, ref: "Achivement" }],
-  tokens: [
-    {
-      token: {
-        type: String,
-        required: true
+  tokens: {
+    type: [
+      {
+        token: {
+          type: String,
+          required: true
+        }
       }
-    }
-  ]
+    ]
+  }
 });
 
 userSchema.pre("save", async function(next) {
@@ -47,18 +50,6 @@ userSchema.pre("save", async function(next) {
     // Hashing the password
     if (this.isModified("password")) {
       console.log("passwordModified");
-      this.password = await bcrypt.hash(this.password, 10);
-    }
-  } catch (err) {
-    next(err);
-  }
-  next();
-});
-
-userSchema.pre("update", async function(next) {
-  try {
-    // Hashing the password
-    if (this.isModified("password")) {
       this.password = await bcrypt.hash(this.password, 10);
     }
   } catch (err) {
