@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require("../config/mongoose");
 
 const { Schema } = mongoose;
 
@@ -27,9 +27,22 @@ const userSchema = Schema({
     type: Map,
     of: String
   },
-  education: [{ type: Schema.Types.ObjectId, ref: "Education" }],
-  work: [{ type: Schema.Types.ObjectId, ref: "Work" }],
+  educations: [{ type: Schema.Types.ObjectId, ref: "Education" }],
+  works: [{ type: Schema.Types.ObjectId, ref: "Work" }],
   achivements: [{ type: Schema.Types.ObjectId, ref: "Achivement" }]
+});
+
+userSchema.pre("save", async function(next) {
+  const promises = [];
+  this.works.forEach(item => promises.push(item.save()));
+  this.educations.forEach(item => promises.push(item.save()));
+  this.achivements.forEach(item => promises.push(item.save()));
+  try {
+    await Promise.all(promises);
+  } catch (err) {
+    next(err);
+  }
+  next();
 });
 
 const User = mongoose.model("User", userSchema);
