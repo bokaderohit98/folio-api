@@ -21,6 +21,8 @@ module.exports = {
   rules: {
     "prettier/prettier": "error",
     "no-console": 0,
-    "no-underscore-dangle": 0
+    "no-underscore-dangle": 0,
+    "func-names": 0,
+    "no-use-before-define": 0,
   },
 };

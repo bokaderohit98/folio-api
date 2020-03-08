@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const randomString = require("randomstring");
 const mongoose = require("../config/mongoose");
 
 const { Schema } = mongoose;
@@ -33,15 +34,21 @@ const userSchema = Schema({
   educations: [{ type: Schema.Types.ObjectId, ref: "Education" }],
   works: [{ type: Schema.Types.ObjectId, ref: "Work" }],
   achivements: [{ type: Schema.Types.ObjectId, ref: "Achivement" }],
-  tokens: {
-    type: [
-      {
-        token: {
-          type: String,
-          required: true
-        }
+  tokens: [
+    {
+      token: {
+        type: String,
+        required: true
       }
-    ]
+    }
+  ],
+  verification_url: {
+    type: String,
+    default: randomString.generate(40)
+  },
+  verified: {
+    type: Boolean,
+    default: false
   }
 });
 
@@ -67,7 +74,6 @@ userSchema.methods.generateAuthToken = async function() {
 userSchema.statics.findByCredentials = async function(email, password) {
   const user = await User.findOne({ email });
   if (!user) {
-    console.log("email");
     throw new Error({ error: "Email not found" });
   }
 
@@ -79,6 +85,17 @@ userSchema.statics.findByCredentials = async function(email, password) {
     .populate("works")
     .populate("achivements");
 
+  return user;
+};
+
+userSchema.statics.findByUrl = async function(url) {
+  let user = await User.findOne({ verification_url: url });
+  if (!user) {
+    throw new Error({ error: "Tampered verification url" });
+  }
+  user.verified = true;
+  user.verification_url = "";
+  user = await user.save();
   return user;
 };
 

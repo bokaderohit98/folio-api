@@ -1,5 +1,6 @@
 const { User } = require("../models");
 const validations = require("../helpers/validations");
+const emailVerification = require("../helpers/emalVerification");
 
 /**
  * Controller to get basic details of user
@@ -44,22 +45,32 @@ exports.getAllDetails = (req, res) => {
 /**
  * Create new user
  */
-exports.createNewUser = (req, res) => {
+exports.createNewUser = async (req, res) => {
   const { body, error } = validations.validateBasicDetails(req.body);
+  let newUser = null;
 
   if (!body) res.status(400).send(error);
   else
     new User(body)
       .save()
-      .then(user => res.send(user._id))
-      .catch(err => {
+      .then(user => {
+        newUser = user;
+        emailVerification.sendVerificationEmail(
+          user.email,
+          user.verification_url
+        );
+      })
+      .then(() => res.send({ success: "Verification email sent" }))
+      .catch(async err => {
         console.log(err);
         if (err.code === 11000)
           res.status(400).send({ error: "Email already exist" });
-        else
+        else {
+          await User.findByIdAndRemove(newUser._id);
           res
             .status(500)
             .send({ error: "Something went wrong. Try again Later!" });
+        }
       });
 };
 
@@ -79,6 +90,36 @@ exports.loginUser = async (req, res) => {
     console.log(err);
     res.status(400).send({ error: "Invalid Credentials" });
   }
+};
+
+/**
+ * Verify Email
+ */
+exports.verifyEmail = async (req, res) => {
+  const { url } = req.params;
+  User.findByUrl(url)
+    .then(() => {
+      res.send({ success: "Email verified" });
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(400).send({ error: "Tampered verification url" });
+    });
+};
+
+/**
+ * Resend verification email
+ */
+exports.resendVerificationEmail = (req, res) => {
+  const { email, verification_url: url } = req.user;
+  if (!url) res.status(400).send({ error: "Email already verified" });
+  emailVerification
+    .sendVerificationEmail(email, url)
+    .then(() => res.send({ success: "Verification email sent" }))
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ error: "Something went wrong. Try again later!" });
+    });
 };
 
 /**

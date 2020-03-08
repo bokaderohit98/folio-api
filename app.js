@@ -39,6 +39,19 @@ app.get("/", (req, res) => {
     });
 });
 
+app.delete("/del", async (req, res) => {
+  try {
+    await User.findOneAndDelete(
+      { email: "bokaderohit98@gmail.com" },
+      { userFindAndModify: false }
+    );
+    res.send({ success: "Deleted" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ error: "Error" });
+  }
+});
+
 // Starting App
 const { PORT } = process.env;
 app.listen(PORT, err => {

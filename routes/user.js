@@ -18,6 +18,20 @@ router.post("/register", controller.createNewUser);
 router.post("/login", controller.loginUser);
 
 /**
+ * Resend verification email
+ */
+router.get(
+  "/verify/resend",
+  middlewares.auth,
+  controller.resendVerificationEmail
+);
+
+/**
+ * Email verification route
+ */
+router.get("/verify/:url", controller.verifyEmail);
+
+/**
  * Update Basic details
  */
 router.put("/", middlewares.auth, controller.updateBasicDetails);
