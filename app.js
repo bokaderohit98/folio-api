@@ -1,6 +1,5 @@
 // Loading configurations
 require("dotenv").config();
-require("./config/mongoose");
 
 // Loading dependencies
 const express = require("express");
