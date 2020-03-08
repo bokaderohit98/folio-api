@@ -6,13 +6,14 @@ require("./config/mongoose");
 const express = require("express");
 const bodyParser = require("body-parser");
 
-const { User, Education } = require("./models");
+const { User } = require("./models");
 const {
   userRoutes,
   educationRoutes,
   workRoutes,
   achivementRoutes
 } = require("./routes");
+const middlewares = require("./middlewares");
 
 // Creating express app
 const app = express();
@@ -20,6 +21,7 @@ const app = express();
 // Middlewares
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(middlewares.cors);
 
 // Mounting Routes
 app.use("/api/user", userRoutes);
