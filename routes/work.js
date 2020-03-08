@@ -5,16 +5,21 @@ const middlewares = require("../middlewares");
 /**
  * Route to add new work
  */
-router.post("/", middlewares.auth, controller.addWork);
+router.post("/", middlewares.auth, middlewares.verified, controller.addWork);
 
 /**
  * Route to edit work
  */
-router.put("/:id", middlewares.auth, controller.editWork);
+router.put("/:id", middlewares.auth, middlewares.verified, controller.editWork);
 
 /**
  * Route to delete work
  */
-router.delete("/:id", middlewares.auth, controller.deleteWork);
+router.delete(
+  "/:id",
+  middlewares.auth,
+  middlewares.verified,
+  controller.deleteWork
+);
 
 module.exports = router;

@@ -1,10 +1,23 @@
 const bcrypt = require("bcryptjs");
+
+/**
+ * Validate email
+ * @param {string} - email
+ * @return {boolean} - whether email is valid or not
+ */
+exports.validateEmail = email => {
+  const emailRegExp = RegExp(
+    /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+  );
+  return emailRegExp.test(email);
+};
+
 /**
  * Validate Login details
  * @param {object} -request body
  * @returns {Object} - containing request body and error object
  */
-exports.validateLoginDetails = ({ email, password }) => {
+exports.validateLoginDetails = ({ email, password, otp }, type) => {
   const emailRegExp = RegExp(
     /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   );
@@ -12,13 +25,16 @@ exports.validateLoginDetails = ({ email, password }) => {
 
   if (!email || !email.trim() || !emailRegExp.test(email.trim()))
     errorMessage = "Invalid email";
-  else if (!password || !password.trim()) errorMessage = "Invalid password";
+  else if (type === "password" && (!password || !password.trim()))
+    errorMessage = "Invalid password";
+  else if (type === "otp" && !otp) errorMessage = "Invalid OTP";
 
   if (errorMessage) return { body: null, error: { error: errorMessage } };
   return {
     body: {
       email: email.trim(),
-      password: password.trim()
+      password: password && password.trim(),
+      otp: otp && otp.trim()
     },
     error: null
   };

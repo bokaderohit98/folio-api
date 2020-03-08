@@ -1,6 +1,6 @@
 const { User } = require("../models");
 const validations = require("../helpers/validations");
-const emailVerification = require("../helpers/emalVerification");
+const emailService = require("../helpers/emailService");
 
 /**
  * Controller to get basic details of user
@@ -9,9 +9,9 @@ exports.getBasicDetails = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
-    .select("-password -tokens")
+    .select("-password -tokens -verification_url -otp")
     .then(user => {
-      if (user.name === "CastError") throw new Error();
+      if (user.name === "CastError" || !user.verified) throw new Error();
       res.send(user);
     })
     .catch(err => {
@@ -27,13 +27,13 @@ exports.getAllDetails = (req, res) => {
   const { id } = req.params;
 
   User.findById(id)
-    .select("-password -tokens")
+    .select("-password -tokens -verification_url -otp")
     .populate("educations")
     .populate("works")
     .populate("achivements")
     .exec()
     .then(user => {
-      if (user.name === "CastError") throw new Error();
+      if (user.name === "CastError" || !user.verified) throw new Error();
       res.send(user);
     })
     .catch(err => {
@@ -55,10 +55,7 @@ exports.createNewUser = async (req, res) => {
       .save()
       .then(user => {
         newUser = user;
-        emailVerification.sendVerificationEmail(
-          user.email,
-          user.verification_url
-        );
+        emailService.sendVerificationEmail(user.email, user.verification_url);
       })
       .then(() => res.send({ success: "Verification email sent" }))
       .catch(async err => {
@@ -78,13 +75,38 @@ exports.createNewUser = async (req, res) => {
  * Login
  */
 exports.loginUser = async (req, res) => {
-  const { body, error } = validations.validateLoginDetails(req.body);
+  const { body, error } = validations.validateLoginDetails(
+    req.body,
+    "password"
+  );
 
   if (!body) res.status(400).send(error);
 
   try {
     const user = await User.findByCredentials(body.email, body.password);
     const token = await user.generateAuthToken();
+    user.tokens = undefined;
+    user.password = undefined;
+    res.send({ user, token });
+  } catch (err) {
+    console.log(err);
+    res.status(400).send({ error: "Invalid Credentials" });
+  }
+};
+
+/**
+ * Login using OTP
+ */
+exports.loginViaOTP = async (req, res) => {
+  const { body, error } = validations.validateLoginDetails(req.body, "otp");
+
+  if (!body) res.status(400).send(error);
+
+  try {
+    const user = await User.findByOTP(body.email, body.otp);
+    const token = await user.generateAuthToken();
+    user.tokens = undefined;
+    user.password = undefined;
     res.send({ user, token });
   } catch (err) {
     console.log(err);
@@ -113,12 +135,29 @@ exports.verifyEmail = async (req, res) => {
 exports.resendVerificationEmail = (req, res) => {
   const { email, verification_url: url } = req.user;
   if (!url) res.status(400).send({ error: "Email already verified" });
-  emailVerification
+  emailService
     .sendVerificationEmail(email, url)
     .then(() => res.send({ success: "Verification email sent" }))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again later!" });
+    });
+};
+
+/**
+ * Get OTP
+ */
+exports.getOTP = (req, res) => {
+  const { email } = req.body;
+  if (!validations.validateEducation(email))
+    res.status(400).send({ error: "Invalid email" });
+
+  User.generateOTP(email)
+    .then(otp => emailService.sendOTP(email, otp))
+    .then(() => res.send({ success: "OTP sent to registered Email" }))
+    .catch(err => {
+      console.log(err);
+      res.status(500).send({ error: "Something wend wrong. Try again later!" });
     });
 };
 

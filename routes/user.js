@@ -27,6 +27,16 @@ router.get(
 );
 
 /**
+ * Forgot password
+ */
+router.post("/otp", controller.getOTP);
+
+/**
+ * Login via opt
+ */
+router.post("/login/otp", controller.loginViaOTP);
+
+/**
  * Email verification route
  */
 router.get("/verify/:url", controller.verifyEmail);

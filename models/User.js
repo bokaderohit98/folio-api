@@ -19,6 +19,11 @@ const userSchema = Schema({
     type: String,
     required: true
   },
+  otp: {
+    value: String,
+    valid: Boolean,
+    createdAt: Number
+  },
   dob: {
     type: Date,
     required: true
@@ -72,7 +77,7 @@ userSchema.methods.generateAuthToken = async function() {
 };
 
 userSchema.statics.findByCredentials = async function(email, password) {
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email }, "-verification_url -otp");
   if (!user) {
     throw new Error({ error: "Email not found" });
   }
@@ -90,13 +95,53 @@ userSchema.statics.findByCredentials = async function(email, password) {
 
 userSchema.statics.findByUrl = async function(url) {
   let user = await User.findOne({ verification_url: url });
-  if (!user) {
-    throw new Error({ error: "Tampered verification url" });
-  }
+  if (!user) throw new Error({ error: "Tampered verification url" });
+
   user.verified = true;
   user.verification_url = "";
   user = await user.save();
   return user;
+};
+
+userSchema.statics.findByOTP = async function(email, otp) {
+  const user = await User.findOne({ email }, "-verification_url");
+  const { value, valid, createdAt } = user.otp;
+
+  if (!user) throw new Error({ error: "Incorrect Email" });
+  if (
+    value !== otp ||
+    !valid ||
+    createdAt + 60 * 60 * 1000 < new Date().valueOf()
+  )
+    throw new Error({ error: "Incorrect OTP" });
+
+  user.otp = {
+    value: "",
+    valid: false,
+    createdAt: 0
+  };
+
+  await user
+    .populate("educations")
+    .populate("works")
+    .populate("achivements");
+
+  return user;
+};
+
+userSchema.statics.generateOTP = async function(email) {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error({ error: "Incorrect Email" });
+
+  user.otp = {
+    value: randomString.generate({ length: 6, charset: "numeric" }),
+    valid: true,
+    createdAt: new Date().valueOf()
+  };
+
+  await user.save();
+
+  return user.otp.value;
 };
 
 const User = mongoose.model("User", userSchema);
