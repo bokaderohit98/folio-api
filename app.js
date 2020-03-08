@@ -1,6 +1,8 @@
+// Loading configurations
 require("dotenv").config();
 require("./config/mongoose");
 
+// Loading dependencies
 const express = require("express");
 const bodyParser = require("body-parser");
 
@@ -12,8 +14,7 @@ const {
   achivementRoutes
 } = require("./routes");
 
-const dev = require("./dev/populateDB");
-
+// Creating express app
 const app = express();
 
 // Middlewares
@@ -35,22 +36,6 @@ app.get("/", (req, res) => {
     .catch(err => {
       res.send(err);
     });
-});
-
-app.get("/work", (req, res) => {
-  Education.find({}).then(works => {
-    res.send(works);
-  });
-});
-
-app.get("/add", (req, res) => {
-  dev.saveUser();
-  res.send();
-});
-
-app.get("/delete", (req, res) => {
-  dev.deleteUser();
-  res.send();
 });
 
 // Starting App
