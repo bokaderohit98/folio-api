@@ -25,17 +25,14 @@ const userSchema = Schema({
     createdAt: Number
   },
   dob: {
-    type: Date,
+    type: Number,
     required: true
   },
   gender: {
     type: String,
     required: true
   },
-  social: {
-    type: Map,
-    of: String
-  },
+  social_handles: { type: Array, default: [] },
   educations: [{ type: Schema.Types.ObjectId, ref: "Education" }],
   works: [{ type: Schema.Types.ObjectId, ref: "Work" }],
   achivements: [{ type: Schema.Types.ObjectId, ref: "Achivement" }],

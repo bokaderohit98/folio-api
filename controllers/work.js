@@ -21,9 +21,8 @@ exports.addWork = (req, res) => {
         { new: true, useFindAndModify: false }
       );
     })
-    .then(user => {
-      res.send(user);
-    })
+    .then(user => Work.find({ _id: { $in: user.works } }))
+    .then(works => res.send(works))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again Later!" });
@@ -37,15 +36,13 @@ exports.editWork = (req, res) => {
   const { id } = req.params;
 
   const { body, error } = validations.validateUpdatedWork(req.body);
-
-  console.log(body, error);
+  const { user } = req;
 
   if (!body) res.status(400).send(error);
 
   Work.findByIdAndUpdate(id, body, { new: true, useFindAndModify: false })
-    .then(work => {
-      res.send(work);
-    })
+    .then(() => Work.find({ _id: { $in: user.works } }))
+    .then(works => res.send(works))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again Later!" });

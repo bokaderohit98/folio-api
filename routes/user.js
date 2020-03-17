@@ -42,6 +42,11 @@ router.post("/login/otp", controller.loginViaOTP);
 router.get("/verify/:url", controller.verifyEmail);
 
 /**
+ * Get all details of current user
+ */
+router.get("/", middlewares.auth, controller.getMe);
+
+/**
  * Update Basic details
  */
 router.put("/", middlewares.auth, controller.updateBasicDetails);

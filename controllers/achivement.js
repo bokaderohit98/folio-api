@@ -21,9 +21,8 @@ exports.addAchivement = (req, res) => {
         { new: true, useFindAndModify: false }
       );
     })
-    .then(user => {
-      res.send(user);
-    })
+    .then(user => Achivement.find({ _id: { $in: user.achivements } }))
+    .then(achivements => res.send(achivements))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again Later!" });
@@ -37,15 +36,13 @@ exports.editAchivement = (req, res) => {
   const { id } = req.params;
 
   const { body, error } = validations.validateUpdatedAchivement(req.body);
-
-  console.log(body, error);
+  const { user } = req;
 
   if (!body) res.status(400).send(error);
 
   Achivement.findByIdAndUpdate(id, body, { new: true, useFindAndModify: false })
-    .then(achivement => {
-      res.send(achivement);
-    })
+    .then(() => Achivement.find({ _id: { $in: user.achivements } }))
+    .then(achivements => res.send(achivements))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again Later!" });

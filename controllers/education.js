@@ -21,9 +21,8 @@ exports.addEducation = (req, res) => {
         { new: true, useFindAndModify: false }
       );
     })
-    .then(user => {
-      res.send(user);
-    })
+    .then(user => Education.find({ _id: { $in: user.educations } }))
+    .then(educations => res.send(educations))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again Later!" });
@@ -37,15 +36,13 @@ exports.editEducation = (req, res) => {
   const { id } = req.params;
 
   const { body, error } = validations.validateUpdatedEducation(req.body);
-
-  console.log(body, error);
+  const { user } = req;
 
   if (!body) res.status(400).send(error);
 
   Education.findByIdAndUpdate(id, body, { new: true, useFindAndModify: false })
-    .then(edu => {
-      res.send(edu);
-    })
+    .then(() => Education.find({ _id: { $in: user.educations } }))
+    .then(educations => res.send(educations))
     .catch(err => {
       console.log(err);
       res.status(500).send({ error: "Something went wrong. Try again Later!" });

@@ -43,6 +43,28 @@ exports.getAllDetails = (req, res) => {
 };
 
 /**
+ * Controlled to get all details of current user
+ */
+exports.getMe = (req, res) => {
+  const userId = req.user._id;
+
+  User.findById(userId)
+    .select("-password -tokens -verification_url -otp")
+    .populate("educations")
+    .populate("works")
+    .populate("achivements")
+    .exec()
+    .then(user => {
+      if (user.name === "CastError") throw new Error();
+      res.send(user);
+    })
+    .catch(err => {
+      console.log(err);
+      res.status(400).send({ error: "User not found" });
+    });
+};
+
+/**
  * Create new user
  */
 exports.createNewUser = async (req, res) => {
@@ -149,7 +171,7 @@ exports.resendVerificationEmail = (req, res) => {
  */
 exports.getOTP = (req, res) => {
   const { email } = req.body;
-  if (!validations.validateEducation(email))
+  if (!validations.validateEmail(email))
     res.status(400).send({ error: "Invalid email" });
 
   User.generateOTP(email)
@@ -172,8 +194,13 @@ exports.updateBasicDetails = async (req, res) => {
   else
     User.findByIdAndUpdate(userId, body, { useFindAndModify: false, new: true })
       .then(user => {
-        res.send(user);
+        return User.findById(user._id)
+          .select(
+            "-password -tokens -verification_url -otp -educations -works -achivements"
+          )
+          .exec();
       })
+      .then(user => res.send(user))
       .catch(err => {
         console.log(err);
         res

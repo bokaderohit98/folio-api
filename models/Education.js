@@ -4,11 +4,11 @@ const { Schema } = mongoose;
 
 const educationSchema = Schema({
   from: {
-    type: Date,
+    type: Number,
     required: true
   },
   to: {
-    type: Date,
+    type: Number,
     required: true
   },
   institute: {

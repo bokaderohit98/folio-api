@@ -8,7 +8,7 @@ const achivementSchema = Schema({
     required: true
   },
   date: {
-    type: Date,
+    type: Number,
     required: true
   },
   description: {
