@@ -83,7 +83,12 @@ exports.createNewUser = async (req, res) => {
       .catch(async err => {
         console.log(err);
         if (err.code === 11000)
-          res.status(400).send({ error: "Email already exist" });
+          res.status(400).send({
+            email: {
+              status: true,
+              message: "Email already exist"
+            }
+          });
         else {
           await User.findByIdAndRemove(newUser._id);
           res
@@ -112,7 +117,10 @@ exports.loginUser = async (req, res) => {
     res.send({ user, token });
   } catch (err) {
     console.log(err);
-    res.status(400).send({ error: "Invalid Credentials" });
+    res.status(400).send({
+      email: { status: true, message: "Invalid Credentials" },
+      password: { status: true, message: "Invalid Credentials" }
+    });
   }
 };
 
@@ -132,7 +140,10 @@ exports.loginViaOTP = async (req, res) => {
     res.send({ user, token });
   } catch (err) {
     console.log(err);
-    res.status(400).send({ error: "Invalid Credentials" });
+    res.status(400).send({
+      email: { status: true, message: "Invalid Credentials" },
+      otp: { status: true, message: "Invalid Credentials" }
+    });
   }
 };
 
@@ -142,8 +153,10 @@ exports.loginViaOTP = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   const { url } = req.params;
   User.findByUrl(url)
-    .then(() => {
-      res.send({ success: "Email verified" });
+    .then(user => user.generateAuthToken())
+    .then(token => {
+      console.log(token);
+      res.send({ token });
     })
     .catch(err => {
       console.log(err);
@@ -179,7 +192,9 @@ exports.getOTP = (req, res) => {
     .then(() => res.send({ success: "OTP sent to registered Email" }))
     .catch(err => {
       console.log(err);
-      res.status(500).send({ error: "Something wend wrong. Try again later!" });
+      res
+        .status(500)
+        .send({ email: { status: true, message: "Email not registered" } });
     });
 };
 
