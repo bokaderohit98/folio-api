@@ -1,3 +1,6 @@
+const fs = require("fs");
+const path = require("path");
+const util = require("util");
 const { User } = require("../models");
 const validations = require("../helpers/validations");
 const emailService = require("../helpers/emailService");
@@ -155,7 +158,6 @@ exports.verifyEmail = async (req, res) => {
   User.findByUrl(url)
     .then(user => user.generateAuthToken())
     .then(token => {
-      console.log(token);
       res.send({ token });
     })
     .catch(err => {
@@ -204,9 +206,19 @@ exports.getOTP = (req, res) => {
 exports.updateBasicDetails = async (req, res) => {
   const { body, error } = await validations.validateUpdatedDetails(req.body);
   const userId = req.user._id;
+  const { avatar } = req.user;
 
   if (!body) res.status(400).send(error);
-  else
+  else {
+    if (req.file) {
+      body.avatar = req.file.filename;
+      if (
+        avatar !== "avatarMale.png" &&
+        avatar !== "avatarFemale.png" &&
+        avatar !== "avatarOther.png"
+      )
+        fs.unlink(`public/images/${avatar}`, err => err && console.log(err));
+    }
     User.findByIdAndUpdate(userId, body, { useFindAndModify: false, new: true })
       .then(user => {
         return User.findById(user._id)
@@ -222,6 +234,7 @@ exports.updateBasicDetails = async (req, res) => {
           .status(500)
           .send({ error: "Something went wrong. Try again Later!" });
       });
+  }
 };
 
 /**

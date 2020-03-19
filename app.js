@@ -4,8 +4,9 @@ require("dotenv").config();
 // Loading dependencies
 const express = require("express");
 const bodyParser = require("body-parser");
+const path = require("path");
+const multer = require("multer");
 
-const { User } = require("./models");
 const {
   userRoutes,
   educationRoutes,
@@ -21,6 +22,9 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(middlewares.cors);
+app.use(
+  multer({ dest: path.join(__dirname, "public/images") }).single("avatar")
+);
 
 // Mounting Routes
 app.use("/api/user", userRoutes);
@@ -28,29 +32,8 @@ app.use("/api/education", educationRoutes);
 app.use("/api/work", workRoutes);
 app.use("/api/achivement", achivementRoutes);
 
-app.get("/", (req, res) => {
-  User.find({})
-    .then(users => {
-      console.log(users);
-      res.send(users);
-    })
-    .catch(err => {
-      res.send(err);
-    });
-});
-
-app.delete("/del", async (req, res) => {
-  try {
-    await User.findOneAndDelete(
-      { email: "bokaderohit98@gmail.com" },
-      { userFindAndModify: false }
-    );
-    res.send({ success: "Deleted" });
-  } catch (err) {
-    console.log(err);
-    res.status(500).send({ error: "Error" });
-  }
-});
+// Setting up static directory
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 // Starting App
 const { PORT } = process.env;

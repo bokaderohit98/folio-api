@@ -32,6 +32,9 @@ const userSchema = Schema({
     type: String,
     required: true
   },
+  avatar: {
+    type: String
+  },
   social_handles: { type: Array, default: [] },
   educations: [{ type: Schema.Types.ObjectId, ref: "Education" }],
   works: [{ type: Schema.Types.ObjectId, ref: "Work" }],
@@ -60,6 +63,11 @@ userSchema.pre("save", async function(next) {
     if (this.isModified("password")) {
       this.password = await bcrypt.hash(this.password, 10);
     }
+
+    // Setting up avatar
+    if (this.gender === "male") this.avatar = "avatarMale.png";
+    else if (this.gender === "female") this.avatar = "avatarFemale.png";
+    else this.avatar = "avatarOther.png";
   } catch (err) {
     next(err);
   }
