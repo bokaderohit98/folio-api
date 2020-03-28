@@ -25,6 +25,7 @@ app.use(middlewares.cors);
 app.use(
   multer({ dest: path.join(__dirname, "public/images") }).single("avatar")
 );
+app.use(express.static(path.join(__dirname, "build")));
 
 // Mounting Routes
 app.use("/api/user", userRoutes);
@@ -34,6 +35,11 @@ app.use("/api/achivement", achivementRoutes);
 
 // Setting up static directory
 app.use("/images", express.static(path.join(__dirname, "public/images")));
+
+// Serving react productin build
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "build/index.html"));
+});
 
 // Starting App
 const { PORT } = process.env;
