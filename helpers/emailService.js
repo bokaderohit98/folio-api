@@ -19,10 +19,12 @@ const sendMail = (email, subject, html) => {
 };
 
 const sendVerificationEmail = (email, url) => {
-  const { HOST, PORT } = process.env;
+  const { HOST, PORT, NODE_ENV } = process.env;
 
   const subject = "Verify your email for Folio";
-  const html = `<h4>Click below link to verify your Email</h4><a href=${HOST}:${PORT}/api/user/verify/${url}>Verify</a>`;
+  const html = `<h4>Click below link to verify your Email</h4><a href=${HOST}${
+    NODE_ENV !== "production" ? `:${PORT}` : ""
+  }/api/user/verify/${url}>Verify</a>`;
 
   return sendMail(email, subject, html);
 };

@@ -158,7 +158,7 @@ exports.verifyEmail = async (req, res) => {
   User.findByUrl(url)
     .then(user => user.generateAuthToken())
     .then(token => {
-      res.send({ token });
+      res.redirect(`/?token=${token}`);
     })
     .catch(err => {
       console.log(err);

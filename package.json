@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon app.js",
-    "build": "cd ../folio-client && npm run build && cp -r ./build ../folio-api/build",
+    "create-build": "rm -rf ./build && cd ../folio-client && npm run build && cp -r ./build ../folio-api/build",
     "start": "node app.js"
   },
   "author": "Rohit Bokade",
